@@ -11,7 +11,7 @@ setup(
 
     keywords=['adb', 'asyncio'],
     url='https://github.com/tba91/aioadb',
-    download_url='https://github.com/tba91/aioadb/archive/0.0.1.tar.gz'
+    download_url='https://github.com/tba91/aioadb/archive/0.0.1.tar.gz',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
