@@ -7,8 +7,6 @@ setup(
     license='MIT',
     description='A minimal async adb implementation',
     author='TBA',
-    url = 'https://github.com/tba91/aioadb',
-
     keywords=['adb', 'asyncio'],
     url='https://github.com/tba91/aioadb',
     download_url='https://github.com/tba91/aioadb/archive/0.0.1.tar.gz',
