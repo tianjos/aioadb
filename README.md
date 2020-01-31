@@ -14,7 +14,7 @@ async def main():
     adbclient = AdbClient("adb_host", adb_port)
     await adbclient.connect_to_adb()
     device = adbclient.device("serial")
-    packages = await device.list_third_packages()
+    packages = await device.packages(flags=['-3'])
     print(packages)
     
 if __name__ == "__main__":
