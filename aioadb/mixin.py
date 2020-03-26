@@ -9,6 +9,9 @@ class ShellMixin:
     async def app_start(self, package_name: str) -> None:
         await self._run(f'monkey -p {package_name} 1')
     
+    async def app_stop(self, package_name):
+        await self._run(f'am force-stop {package_name}')
+    
     @pos_parser
     async def packages(self, flags: list = None) -> list:
         if flags is None: flags = []
