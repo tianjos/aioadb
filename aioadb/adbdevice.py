@@ -28,6 +28,10 @@ class AdbDevice(ShellMixin):
     def ip_address(self, addr):
         self._ip_address = addr
     
+    @property
+    def sync(self) -> "Sync":
+        return Sync(self._client, self.serial)
+    
     def __repr__(self):
         return f"AdbDevice(serial={self.serial}"
     

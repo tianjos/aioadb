@@ -7,10 +7,6 @@ class AdbClient:
         self._host = host
         self._port = port
         self._adbconnection = AdbConnection(self._host, self._port)
-
-    @property
-    def sync(self) -> Sync:
-        return Sync(self, self.serial)
     
     async def connect_to_adb(self):
         await self._adbconnection._connect()
@@ -36,6 +32,9 @@ class AdbClient:
     
     def device(self, serial) -> AdbDevice:
         return AdbDevice(self, serial)
+    
+        def sync(self, serial) -> Sync:
+        return Sync(self, serial)
 
 
     
