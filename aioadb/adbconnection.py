@@ -1,4 +1,11 @@
 import asyncio
+import dataclasses
+
+@dataclasses.dataclass
+class Stream:
+    reader: asyncio.StreamReader
+    writer: asyncio.StreamWriter
+
 
 class AdbConnection:
 
@@ -13,8 +20,11 @@ class AdbConnection:
 
     async def _connect(self):
         self._reader, self._writer = await self._create_connection()
-
     
+    async def stream(self) -> Stream:
+        await self._connect()
+        return Stream(self._reader, self._writer)
+
     async def close(self):
         self._writer.close()
         await self._writer.wait_closed()
