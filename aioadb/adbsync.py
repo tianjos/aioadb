@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from collections import namedtuple
 from functools import partial
 
-from app.asyncdb.exceptions import PushSyncError, StartSyncError
+from .adbexceptions import PushSyncError, StartSyncError
 
 
 FileInfo = namedtuple("FileInfo", ['mode', 'size', 'mtime', 'name'])
