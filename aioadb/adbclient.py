@@ -1,4 +1,4 @@
-from .adbconnection import AdbConnection
+from .adbconnection import AdbConnection, Stream
 from .adbdevice import AdbDevice
 from .adbsync import Sync
 
@@ -8,8 +8,15 @@ class AdbClient:
         self._port = port
         self._adbconnection = AdbConnection(self._host, self._port)
 
+    @property
+    def sync(self) -> Sync:
+        return Sync(self, self.serial)
+    
     async def connect_to_adb(self):
         await self._adbconnection._connect()
+    
+    async def get_stream(self) -> Stream:
+        return await self._adbconnection.stream()
     
     async def shell(self, serial: str, cmd: str):
         await self.connect_to_adb()
@@ -29,9 +36,6 @@ class AdbClient:
     
     def device(self, serial) -> AdbDevice:
         return AdbDevice(self, serial)
-
-    def sync(self, serial) -> Sync:
-        return Sync(self, serial)
 
 
     
