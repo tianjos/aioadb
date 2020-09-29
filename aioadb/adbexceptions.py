@@ -3,6 +3,10 @@ class BaseException(Exception):
     pass
 
 
+class OpenFileError(Exception):
+    '''Raised when couldn't open a file'''
+
+
 class SyncError(BaseException):
     '''Base sync exception class'''
     pass
