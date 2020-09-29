@@ -37,3 +37,19 @@ class ShellMixin:
     @pos_parser
     async def wlan_ip(self) -> None:
         return await self._run(f'ip route')
+    
+    async def push(self, apk_file):
+        destination_path = "/data/local/tmp/tmp-{}.apk".format(int(time.time() * 1000))
+        
+        await self.sync.push(apk_file, destination_path)
+        await self._remote_install(destination_path)
+        await self._remove_file(destination_path)
+    
+    async def _remote_install(self, remote_path):
+        flags = '-r -t'
+        output = await self._run(f'pm install {flags} {remote_path}')
+        if not b'Success' in output:
+            raise Exception('Error during the installation of the apk')
+    
+    async def _remove_file(self, remote_path):
+        await self._run(f'rm {remote_path}')

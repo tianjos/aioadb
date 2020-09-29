@@ -1,5 +1,6 @@
 from .adbconnection import AdbConnection
 from .adbdevice import AdbDevice
+from .adbsync import Sync
 
 class AdbClient:
     def __init__(self, host: str, port: int):
@@ -26,8 +27,11 @@ class AdbClient:
         finally:
             await self._adbconnection.close()
     
-    def device(self, serial) -> 'AdbDevice':
+    def device(self, serial) -> AdbDevice:
         return AdbDevice(self, serial)
+
+    def sync(self, serial) -> Sync:
+        return Sync(self, serial)
 
 
     
