@@ -3,13 +3,13 @@ from setuptools import setup
 setup(
     name='aioadb',
     packages = ['aioadb'],
-    version='0.2.1',
+    version='0.2.2',
     license='MIT',
     description='A minimal async adb implementation',
     author='TBA',
     keywords=['adb', 'asyncio'],
     url='https://github.com/tba91/aioadb',
-    download_url='https://github.com/tba91/aioadb/archive/v0.2.1.tar.gz',
+    download_url='https://github.com/tba91/aioadb/archive/v0.2.2.tar.gz',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
