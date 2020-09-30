@@ -1,7 +1,7 @@
 from .adbconnection import AdbConnection, Stream
 from .adbdevice import AdbDevice
 from .adbenum import ADBEnum
-from .adbexceptions import AdbShellReadError
+from .adbexceptions import AdbShellReadError, AdbConnectionClosedError
 from .adbsync import Sync
 
 class AdbClient:
@@ -30,6 +30,16 @@ class AdbClient:
             raise AdbShellReadError(f"couldn't get all data from adb: {str(e)}")
         finally:
             await stream.close()
+
+    async def server_version(self):
+        stream = await self.get_stream()
+        await stream.write('host:version')
+        await stream.check_adb_response(ADBEnum.OKAY)
+        data = stream.read_bytes(4)
+        if not data:
+            raise AdbConnectionClosedError('connection closed')
+        size = int(data, 16)
+        return await stream.read_bytes(size)
 
     def device(self, serial) -> AdbDevice:
         return AdbDevice(self, serial)

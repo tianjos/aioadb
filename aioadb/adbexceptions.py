@@ -11,6 +11,10 @@ class AdbResponseError(Exception):
     '''Raised when adb response doesn't match'''
 
 
+class AdbConnectionClosedError(Exception):
+    '''Raised when adb connection closes'''
+   
+
 class AdbShellReadError(Exception):
     '''Raised when couldn't read all response data from adb'''
 
