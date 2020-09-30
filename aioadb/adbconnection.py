@@ -1,47 +1,30 @@
 import asyncio
 import dataclasses
 
+from .adbexceptions import AdbResponseError
+
 @dataclasses.dataclass
 class Stream:
-    reader: asyncio.StreamReader
-    writer: asyncio.StreamWriter
-
-
-class AdbConnection:
-
-    def __init__(self, host: str, port: int):
-        self._host = host
-        self._port = port
-        self._reader = None
-        self._writer = None
-
-    async def _create_connection(self):
-        return await asyncio.open_connection(self._host, self._port)
-
-    async def _connect(self):
-        self._reader, self._writer = await self._create_connection()
-    
-    async def stream(self) -> Stream:
-        await self._connect()
-        return Stream(self._reader, self._writer)
+    reader: asyncio.StreamReader = None
+    writer: asyncio.StreamWriter = None
 
     async def close(self):
-        self._writer.close()
-        await self._writer.wait_closed()
+        self.writer.close()
+        await self.writer.wait_closed()
        
     async def write(self, data: str):
-        self._writer.write(self._serialize(data))
-        await self._writer.drain()
+        self.writer.write(self._serialize(data))
+        await self.writer.drain()
     
     async def read_bytes(self, num_bytes: int) -> bytes:
-        data = await self._reader.readexactly(num_bytes)
+        data = await self.reader.readexactly(num_bytes)
         return data
 
     async def read_until_close(self) -> bytes:
         content = b''
         while True:
             try:
-                chunk = await self._reader.read()
+                chunk = await self.reader.read()
                 if not chunk:
                     break
                 content += chunk
@@ -50,9 +33,35 @@ class AdbConnection:
 
             return content
 
+    async def check_adb_response(value: bytes, bytes_to_read: int = 4):
+        data = await self.read_bytes(bytes_to_read)
+        try:
+            assert data == value
+        except AssertionError:
+            AdbResponseError(f'Adb response unexpected: {data}')
+        
+        data = self.read(4)
+        if data == _FAIL:
+            raise AdbError(self.read_string())
+        elif data == _OKAY:
+            return
+        raise AdbError("Unknown data: %s" % data)
+
     @staticmethod
     def _serialize(content: str) -> bytes:
         """Little endian format"""
         return "{:04x}{}".format(len(content), content).encode("utf-8")
-    
-    
+
+
+class AdbConnection:
+
+    def __init__(self, host: str, port: int):
+        self._host = host
+        self._port = port
+        self.stream = Stream()
+
+    async def _create_connection(self):
+        return await asyncio.open_connection(self._host, self._port)
+
+    async def connect(self):
+        self.stream.reader, self.stream.writer = await self._create_connection()
