@@ -39,13 +39,6 @@ class Stream:
             assert data == value
         except AssertionError:
             AdbResponseError(f'Adb response unexpected: {data}')
-        
-        data = self.read(4)
-        if data == _FAIL:
-            raise AdbError(self.read_string())
-        elif data == _OKAY:
-            return
-        raise AdbError("Unknown data: %s" % data)
 
     @staticmethod
     def _serialize(content: str) -> bytes:
