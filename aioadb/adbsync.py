@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from collections import namedtuple
 from functools import partial
 
+from .adbenum import ADBEnum
 from .adbexceptions import PushSyncError, StartSyncError, OpenFileError
 
 
@@ -21,21 +22,20 @@ class Sync:
     async def _prepare_sync(self, path: str, cmd: str) -> 'Stream':
         stream = await self._adbclient.get_stream()
         try:
-            await stream.writer.write(":".join(['host', 'transport', self._serial]))
-            data = await stream.reader.readexactly(4)
-            assert data == b'OKAY'
-            await stream.writer.write("sync:")
-            data = await stream.reader.readexactly(4)
-            assert data == b'OKAY'
-            await stream.writer.write(
-                cmd.encode("utf-8") + struct.pack("<I", len(path)) +
+            await stream.write(":".join(['host', 'transport', self._serial]))  
+            await stream.check_adb_response(ADBEnum.OKAY)
+            await stream.write("sync:")
+            await stream.check_adb_response(ADBEnum.OKAY)
+            stream.writer.write(
+                cmd + struct.pack("<I", len(path)) +
                 path.encode("utf-8")
             )
+            await stream.writer.drain()
             yield stream
         except Exception as e:
             raise StartSyncError(f'not possible to start transfer file {e}')
         finally:
-            stream.writer.close()
+            await stream.close()
 
     @asynccontextmanager 
     async def open_file(self, path: str, mode='rb') -> bytes:
@@ -51,10 +51,10 @@ class Sync:
         
         
     async def stat(self, path: str) -> FileInfo:
-        async with self._prepare_sync(path, "STAT") as stream:
+        async with self._prepare_sync(path, ADBEnum.STAT) as stream:
             data = await stream.reader.readexactly(4)
-            assert data == "STAT"
-            mode, size, mtime = struct.unpack("<III", await stream.reader.readexactly(12))
+            stream.check_adb_response(ADBEnum.STAT)
+            mode, size, mtime = struct.unpack("<III", await stream.read_bytes(12))
             return FileInfo(mode, size, datetime.datetime.fromtimestamp(mtime), path)
     
     
@@ -63,7 +63,7 @@ class Sync:
         # IFDIR: File Directory
         path = dst + "," + str(stat.S_IFREG | mode)
         total_size = 0
-        async with self._prepare_sync(path, "SEND") as stream:
+        async with self._prepare_sync(path, ADBEnum.SEND) as stream:
             async with self.open_file(src) as file:
                 try:    
                     loop = asyncio.get_event_loop()
@@ -71,10 +71,12 @@ class Sync:
                         chunk = await loop.run_in_executor(None, file.read, 4096)
                         if not chunk:
                             mtime = int(datetime.datetime.now().timestamp())
-                            await stream.writer.write(b"DONE" + struct.pack('<I', mtime))
+                            stream.writer.write(ADBEnum.DONE + struct.pack('<I', mtime))
+                            await stream.writer.drain()
                             break
-                        await stream.writer.write(b"DATA" + struct.pack("<I", len(chunk)))
-                        await stream.writer.write(chunk)
+                        stream.writer.write(ADBEnum.DATA + struct.pack("<I", len(chunk)))
+                        await stream.writer.drain()
+                        await stream.write(chunk)
                         total_size += len(chunk)
                 except Exception as e:
                     raise PushSyncError(f'[*] not possible to transfer a file to device {e}')

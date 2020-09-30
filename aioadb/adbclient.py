@@ -9,10 +9,11 @@ class AdbClient:
         self._adbconnection = AdbConnection(self._host, self._port)
     
     async def connect_to_adb(self):
-        await self._adbconnection._connect()
+        await self._adbconnection.connect()
     
     async def get_stream(self) -> Stream:
-        return await self._adbconnection.stream()
+        await self.connect_to_adb()
+        return self._adbconnection.stream
     
     async def shell(self, serial: str, cmd: str):
         await self.connect_to_adb()
