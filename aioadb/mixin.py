@@ -1,6 +1,6 @@
 import time
+from .adbenum import ADBEnum
 from .parser import pre_parser, pos_parser
-
 
 class ShellMixin:
 
@@ -49,7 +49,7 @@ class ShellMixin:
     async def _remote_install(self, remote_path):
         flags = '-r -t'
         output = await self._run(f'pm install {flags} {remote_path}')
-        if not b'Success' in output:
+        if not ADBEnum.SUCCESS in output:
             raise Exception('Error during the installation of the apk')
     
     async def _remove_file(self, remote_path):
