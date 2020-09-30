@@ -10,6 +10,11 @@ class OpenFileError(Exception):
 class AdbResponseError(Exception):
     '''Raised when adb response doesn't match'''
 
+
+class AdbShellReadError(Exception):
+    '''Raised when couldn't read all response data from adb'''
+
+
 class SyncError(BaseException):
     '''Base sync exception class'''
     pass
