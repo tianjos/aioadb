@@ -33,7 +33,7 @@ class Stream:
 
             return content
 
-    async def check_adb_response(value: bytes, bytes_to_read: int = 4):
+    async def check_adb_response(self, value: bytes, bytes_to_read: int = 4):
         data = await self.read_bytes(bytes_to_read)
         try:
             assert data == value
