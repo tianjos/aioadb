@@ -62,7 +62,6 @@ class Sync:
         # IFREG: File Regular
         # IFDIR: File Directory
         path = dst + "," + str(stat.S_IFREG | mode)
-        total_size = 0
         async with self._prepare_sync(path, ADBEnum.SEND) as stream:
             async with self.open_file(src) as file:
                 try:    
@@ -76,8 +75,9 @@ class Sync:
                             break
                         stream.writer.write(ADBEnum.DATA + struct.pack("<I", len(chunk)))
                         await stream.writer.drain()
-                        await stream.write(chunk)
-                        total_size += len(chunk)
+                        stream.writer.write(chunk)
+                        await stream.writer.drain()
+                    assert await stream.read_bytes(4) == ADBEnum.OKAY
                 except Exception as e:
                     raise PushSyncError(f'[*] not possible to transfer a file to device {e}')
 
