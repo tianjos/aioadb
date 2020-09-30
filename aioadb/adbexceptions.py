@@ -7,6 +7,9 @@ class OpenFileError(Exception):
     '''Raised when couldn't open a file'''
 
 
+class AdbResponseError(Exception):
+    '''Raised when adb response doesn't match'''
+
 class SyncError(BaseException):
     '''Base sync exception class'''
     pass
