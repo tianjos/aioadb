@@ -30,7 +30,7 @@ class AdbDevice(ShellMixin):
     
     @property
     def sync(self) -> "Sync":
-        return Sync(self._client, self.serial)
+        return Sync(self._adbclient, self.serial)
     
     def __repr__(self):
         return f"AdbDevice(serial={self.serial}"
