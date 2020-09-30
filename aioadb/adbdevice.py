@@ -1,3 +1,4 @@
+from .adbsync import Sync
 from .mixin import ShellMixin
 
 
