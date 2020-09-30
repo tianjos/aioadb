@@ -1,5 +1,7 @@
 from .adbconnection import AdbConnection, Stream
 from .adbdevice import AdbDevice
+from .adbenum import ADBEnum
+from .adbexceptions import AdbShellReadError
 from .adbsync import Sync
 
 class AdbClient:
@@ -16,25 +18,23 @@ class AdbClient:
         return self._adbconnection.stream
     
     async def shell(self, serial: str, cmd: str):
-        await self.connect_to_adb()
-        await self._adbconnection.write(f'host:transport:{serial}')
-        data = await self._adbconnection.read_bytes(4)
-        assert data == b'OKAY'
-        await self._adbconnection.write(f'shell: {cmd}')
-        data = await self._adbconnection.read_bytes(4)
-        assert data == b'OKAY'
+        stream = await self.get_stream()
+        await stream.write(f'host:transport:{serial}')
+        await stream.check_adb_response(ADBEnum.OKAY)
+        await stream.write(f'shell: {cmd}')
+        await stream.check_adb_response(ADBEnum.OKAY)
         try:
-            data = await self._adbconnection.read_until_close()
+            data = await stream.read_until_close()
             return data
         except Exception as e:
-            print(e)
+            raise AdbShellReadError(f"couldn't get all data from adb: {str(e)}")
         finally:
-            await self._adbconnection.close()
-    
+            await stream.close()
+
     def device(self, serial) -> AdbDevice:
         return AdbDevice(self, serial)
     
-        def sync(self, serial) -> Sync:
+    def sync(self, serial) -> Sync:
         return Sync(self, serial)
 
 
